@@ -1,0 +1,23 @@
+# Composer
+/vendor/
+/composer.lock
+
+# Logs
+/logs/
+/storage/logs/
+
+# Docker junk
+/docker/*/data
+*.pid
+
+# Cache
+/cache/
+/tmp/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

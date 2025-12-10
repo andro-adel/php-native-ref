@@ -1,4 +1,4 @@
-FROM php:8.5-apache
+FROM php:8.3-apache
 
 # تثبيت الأدوات المطلوبة وبناء امتدادات PHP
 RUN apt-get update && apt-get install -y \
@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
 
 # تثبيت pecl/redis (phpredis) ثم تفعيله
 RUN pecl channel-update pecl.php.net \
-    && pecl install redis \
+    && pecl install redis-6.0.2 \
     && docker-php-ext-enable redis
 
 # تمكين mod_rewrite
@@ -40,7 +40,7 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && rm composer-setup.php
 
 # تثبيت الحزم (مثل Monolog) إن وُجدت في composer.json
-RUN composer install --no-interaction --no-scripts --no-progress || true
+# RUN composer install --no-interaction --no-scripts --no-progress || true
 
 # إعداد أذونات
 RUN chown -R www-data:www-data /var/www/html \

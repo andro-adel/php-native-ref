@@ -1,7 +1,8 @@
 services:
   app:
     build:
-      context: ./Dockerfile
+      context: .
+      dockerfile: Dockerfile
     container_name: php_native_app
     volumes:
       - ./:/var/www/html:delegated
