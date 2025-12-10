@@ -1,0 +1,12 @@
+{
+    "name": "phpnative/ref",
+    "description": "PHP Native reference project",
+    "require": {
+        "monolog/monolog": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}

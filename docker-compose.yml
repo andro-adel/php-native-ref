@@ -1,0 +1,93 @@
+services:
+  app:
+    build:
+      context: ./Dockerfile
+    container_name: php_native_app
+    volumes:
+      - ./:/var/www/html:delegated
+      - ./logs:/var/log/app
+    ports:
+      - "8000:80"
+    environment:
+      - APP_ENV=development
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DB=app_db
+      - MYSQL_USER=app_user
+      - MYSQL_PASSWORD=secret
+      - MARIADB_HOST=mariadb
+      - MARIADB_PORT=3306
+      - MARIADB_DB=app_db
+      - MARIADB_USER=app_user
+      - MARIADB_PASSWORD=secret
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mysql
+      - mariadb
+      - redis
+
+  mysql:
+    image: mysql:8.0
+    container_name: php_native_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: secret
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3307:3306"
+
+  mariadb:
+    image: mariadb:11
+    container_name: php_native_mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: root_secret
+      MARIADB_DATABASE: app_db
+      MARIADB_USER: app_user
+      MARIADB_PASSWORD: secret
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./db/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3308:3306"
+
+  phpmyadmin_mysql:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: root_secret
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+
+  phpmyadmin_mariadb:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_mariadb
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: root
+      PMA_PASSWORD: root_secret
+    ports:
+      - "8082:80"
+    depends_on:
+      - mariadb
+
+  redis:
+    image: redis:7
+    container_name: php_native_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mysql_data:
+  mariadb_data:
+  redis_data:
