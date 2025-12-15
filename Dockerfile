@@ -22,8 +22,8 @@ RUN pecl channel-update pecl.php.net \
 # تمكين mod_rewrite
 RUN a2enmod rewrite
 
-# نسخ إعدادات php (اختياري)
-# COPY php.ini /usr/local/etc/php/php.ini
+# نسخ إعدادات php
+COPY php.ini /usr/local/etc/php/php.ini
 
 # إعداد Document Root
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
@@ -40,7 +40,7 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && rm composer-setup.php
 
 # تثبيت الحزم (مثل Monolog) إن وُجدت في composer.json
-# RUN composer install --no-interaction --no-scripts --no-progress || true
+RUN composer install --no-interaction --no-progress --prefer-dist
 
 # إعداد أذونات
 RUN chown -R www-data:www-data /var/www/html \

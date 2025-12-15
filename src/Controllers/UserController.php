@@ -2,19 +2,25 @@
 
 namespace App\Controllers;
 
+use App\Http\Request;
+use App\Http\Response;
 use App\Models\UserModel;
 use App\Services\Cache\RedisCache;
 
 class UserController
 {
-    public function index()
+    /**
+     * عرض جميع المستخدمين مع كاش Redis
+     */
+    public function index(Request $request): void
     {
         $cache = new RedisCache();
         $cacheKey = 'users.all';
 
         $data = $cache->get($cacheKey);
         if ($data) {
-            return json_response(['source' => 'redis', 'data' => $data]);
+            Response::json(['source' => 'redis', 'data' => $data]);
+            return;
         }
 
         // مثال: نقرأ من كلا القاعدتين للتوضيح
@@ -30,25 +36,80 @@ class UserController
         ];
 
         $cache->set($cacheKey, $result, 60); // cache 60s
-        return json_response(['source' => 'db', 'data' => $result]);
+        Response::json(['source' => 'db', 'data' => $result]);
     }
 
-    public function show($id)
+    /**
+     * عرض مستخدم واحد
+     */
+    public function show(Request $request, $id): void
     {
         $model = new UserModel('mysql');
         $user = $model->find($id);
-        if (!$user) return json_response(['error' => 'not found'], 404);
-        return json_response($user);
+        if (!$user) {
+            Response::json(['error' => 'not found'], 404);
+            return;
+        }
+        Response::json($user);
     }
 
-    public function store()
+    /**
+     * إنشاء مستخدم جديد
+     */
+    public function store(Request $request): void
     {
-        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $input = $request->body;
         if (empty($input['name']) || empty($input['email'])) {
-            return json_response(['error' => 'name and email required'], 422);
+            Response::json(['error' => 'name and email required'], 422);
+            return;
         }
+        if (!filter_var($input['email'], FILTER_VALIDATE_EMAIL)) {
+            Response::json(['error' => 'invalid email'], 422);
+            return;
+        }
+
         $model = new UserModel('mysql');
         $id = $model->create($input['name'], $input['email']);
-        return json_response(['id' => $id], 201);
+        Response::json(['id' => $id], 201);
+    }
+
+    /**
+     * تحديث مستخدم
+     */
+    public function update(Request $request, $id): void
+    {
+        $input = $request->body;
+        if (empty($input['name']) && empty($input['email'])) {
+            Response::json(['error' => 'name or email required'], 422);
+            return;
+        }
+        if (!empty($input['email']) && !filter_var($input['email'], FILTER_VALIDATE_EMAIL)) {
+            Response::json(['error' => 'invalid email'], 422);
+            return;
+        }
+
+        $model = new UserModel('mysql');
+        $user = $model->find($id);
+        if (!$user) {
+            Response::json(['error' => 'not found'], 404);
+            return;
+        }
+        $model->update($id, $input['name'] ?? $user['name'], $input['email'] ?? $user['email']);
+        Response::json(['status' => 'updated']);
+    }
+
+    /**
+     * حذف مستخدم
+     */
+    public function destroy(Request $request, $id): void
+    {
+        $model = new UserModel('mysql');
+        $user = $model->find($id);
+        if (!$user) {
+            Response::json(['error' => 'not found'], 404);
+            return;
+        }
+        $model->delete($id);
+        Response::json(['status' => 'deleted']);
     }
 }

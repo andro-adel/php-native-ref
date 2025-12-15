@@ -2,43 +2,83 @@
 
 namespace App;
 
+use App\Http\Request;
+use App\Http\Response;
+
 class Router
 {
-    private $routes = [];
+    private array $routes = [];
 
-    public function get($path, $handler)
+    public function get(string $path, $handler): void    { $this->addRoute('GET', $path, $handler); }
+    public function post(string $path, $handler): void   { $this->addRoute('POST', $path, $handler); }
+    public function put(string $path, $handler): void    { $this->addRoute('PUT', $path, $handler); }
+    public function patch(string $path, $handler): void  { $this->addRoute('PATCH', $path, $handler); }
+    public function delete(string $path, $handler): void { $this->addRoute('DELETE', $path, $handler); }
+    public function options(string $path, $handler): void{ $this->addRoute('OPTIONS', $path, $handler); }
+    public function head(string $path, $handler): void   { $this->addRoute('HEAD', $path, $handler); }
+
+    private function addRoute(string $method, string $path, $handler): void
     {
-        $this->addRoute('GET', $path, $handler);
-    }
-    public function post($path, $handler)
-    {
-        $this->addRoute('POST', $path, $handler);
+        $params = [];
+        $regex = preg_replace_callback('/\{([^}]+)\}/', function ($m) use (&$params) {
+            $params[] = $m[1];
+            return '([^/]+)';
+        }, $path);
+        $pattern = "@^{$regex}$@";
+
+        $this->routes[] = [
+            'method'  => strtoupper($method),
+            'path'    => $path,
+            'handler' => $handler,
+            'pattern' => $pattern,
+            'params'  => $params,
+        ];
     }
 
-    private function addRoute($method, $path, $handler)
+    public function dispatch(Request $request): void
     {
-        $this->routes[] = compact('method', 'path', 'handler');
-    }
+        $path   = $request->path;
+        $method = $request->method;
+        $allowed = [];
 
-    public function dispatch($uri, $method)
-    {
-        $path = parse_url($uri, PHP_URL_PATH);
         foreach ($this->routes as $route) {
-            $pattern = "@^" . preg_replace('/\{[^\}]+\}/', '([^/]+)', $route['path']) . "$@";
-            if ($route['method'] === $method && preg_match($pattern, $path, $matches)) {
-                array_shift($matches);
-                $handler = $route['handler'];
+            if (!preg_match($route['pattern'], $path, $matches)) {
+                continue;
+            }
 
+            if ($route['method'] !== $method) {
+                $allowed[] = $route['method'];
+                continue;
+            }
+
+            array_shift($matches);
+            $handler = $route['handler'];
+            $args = array_merge([$request], $matches);
+
+            try {
                 if (is_callable($handler)) {
-                    return call_user_func_array($handler, $matches);
-                } elseif (is_array($handler)) {
-                    [$class, $method] = $handler;
-                    $instance = new $class;
-                    return call_user_func_array([$instance, $method], $matches);
+                    call_user_func_array($handler, $args);
+                    return;
                 }
+                if (is_array($handler)) {
+                    [$class, $m] = $handler;
+                    $instance = new $class;
+                    call_user_func_array([$instance, $m], $args);
+                    return;
+                }
+            } catch (\Throwable $e) {
+                // خطأ غير متوقع
+                Response::json(['error' => 'Internal Server Error', 'message' => $e->getMessage()], 500);
+                return;
             }
         }
-        http_response_code(404);
-        echo json_encode(['error' => 'Not Found']);
+
+        if (!empty($allowed)) {
+            header('Allow: ' . implode(', ', array_unique($allowed)));
+            Response::json(['error' => 'Method Not Allowed'], 405);
+            return;
+        }
+
+        Response::json(['error' => 'Not Found'], 404);
     }
 }

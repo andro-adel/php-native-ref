@@ -9,11 +9,11 @@ use Monolog\Formatter\LineFormatter;
 
 class Logger
 {
-    private static $logger = null;
+    private static array $loggers = [];
 
     public static function get($channel = 'app')
     {
-        if (self::$logger) return self::$logger;
+        if (isset(self::$loggers[$channel])) return self::$loggers[$channel];
         $log = new Mono($channel);
 
         // ملف يومي مع حفظ X ملفات (Rotating)
@@ -28,7 +28,7 @@ class Logger
         $log->pushHandler($fileHandler);
         $log->pushHandler($stdoutHandler);
 
-        self::$logger = $log;
-        return self::$logger;
+        self::$loggers[$channel] = $log;
+        return self::$loggers[$channel];
     }
 }

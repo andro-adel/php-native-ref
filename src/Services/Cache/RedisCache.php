@@ -34,7 +34,8 @@ class RedisCache
     public function set(string $key, $value, int $ttl = 3600)
     {
         if (!$this->client) return false;
-        return $this->client->set($key, serialize($value), $ttl);
+        // استخدام setex لضمان TTL
+        return $this->client->setex($key, $ttl, serialize($value));
     }
 
     public function get(string $key)
