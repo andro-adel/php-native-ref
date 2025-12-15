@@ -1,0 +1,30 @@
+{
+  "info": {
+    "name": "PHP Native Ref - API Examples",
+    "_postman_id": "php-native-ref-collection",
+    "description": "مجموعة مسارات جاهزة لتجربة الميزات على Postman/Insomnia",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    { "name": "Root", "request": { "method": "GET", "url": "http://localhost:8000/" } },
+
+    { "name": "Examples - Features (PHP 8.3)", "request": { "method": "GET", "url": "http://localhost:8000/examples/features" } },
+    { "name": "Examples - JSON Validate", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"A\",\n  \"age\": 30\n}" }, "url": "http://localhost:8000/examples/json-validate" } },
+    { "name": "Examples - Random Token", "request": { "method": "GET", "url": "http://localhost:8000/examples/random" } },
+    { "name": "Examples - Enum", "request": { "method": "GET", "url": "http://localhost:8000/examples/enum" } },
+    { "name": "Examples - Intl", "request": { "method": "GET", "url": "http://localhost:8000/examples/intl" } },
+    { "name": "Examples - Intl Date", "request": { "method": "GET", "url": "http://localhost:8000/examples/intl-date" } },
+    { "name": "Examples - Streams", "request": { "method": "GET", "url": "http://localhost:8000/examples/streams" } },
+    { "name": "Examples - Streams File", "request": { "method": "GET", "url": "http://localhost:8000/examples/streams-file" } },
+    { "name": "Examples - Fiber", "request": { "method": "GET", "url": "http://localhost:8000/examples/fiber" } },
+    { "name": "Examples - Fiber Steps", "request": { "method": "GET", "url": "http://localhost:8000/examples/fiber-steps" } },
+    { "name": "Examples - Attribute", "request": { "method": "GET", "url": "http://localhost:8000/examples/attribute" } },
+    { "name": "Examples - Opcache", "request": { "method": "GET", "url": "http://localhost:8000/examples/opcache" } },
+
+    { "name": "Users - List", "request": { "method": "GET", "url": "http://localhost:8000/users" } },
+    { "name": "Users - Show", "request": { "method": "GET", "url": "http://localhost:8000/users/1" } },
+    { "name": "Users - Create", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"New User\",\n  \"email\": \"new@example.com\"\n}" }, "url": "http://localhost:8000/users" } },
+    { "name": "Users - Update", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated\",\n  \"email\": \"updated@example.com\"\n}" }, "url": "http://localhost:8000/users/1" } },
+    { "name": "Users - Delete", "request": { "method": "DELETE", "url": "http://localhost:8000/users/1" } }
+  ]
+}
